@@ -1,0 +1,17 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Transform: AWS::Serverless-2016-10-31
+
+Resources:
+  ResizerLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: ../src
+      Runtime: nodejs16.x
+      Timeout: 100
+      Policies:
+        - AmazonS3ReadOnlyAccess
+      Environment:
+        Variables:
+          NODE_OPTIONS: --enable-source-maps

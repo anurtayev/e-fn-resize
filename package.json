@@ -1,0 +1,40 @@
+{
+  "name": "e-fn-resize",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:anurtayev/e-fn-resize.git",
+  "author": "Adil Nurtayev <anurtayev@torstar.ca>",
+  "license": "MIT",
+  "scripts": {
+    "env": ". scripts/env.sh",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "sam:deploy": ". scripts/env.sh && npm run build && sam deploy --template-file infrastructure/template.yaml --stack-name $ASPAN_STACK_NAME --capabilities CAPABILITY_IAM --s3-bucket $ASPAN_INFRA_BUCKET",
+    "sam:delete": ". scripts/env.sh && sam delete --stack-name $ASPAN_STACK_NAME --no-prompts --region $(aws configure get region)",
+    "sam:sync": ". scripts/env.sh && sam sync --template-file infrastructure/template.yaml --stack-name $ASPAN_STACK_NAME --capabilities CAPABILITY_AUTO_EXPAND CAPABILITY_IAM --s3-bucket $ASPAN_INFRA_BUCKET --watch",
+    "sam:logs": ". scripts/env.sh && sam logs --stack-name $ASPAN_STACK_NAME --tail",
+    "s3:media:uploadTestData": ". scripts/env.sh && aws s3 rm s3://$EPSILON_MEDIA_BUCKET_NAME --recursive && aws s3 sync s3://aspan-test-media s3://$EPSILON_MEDIA_BUCKET_NAME",
+    "s3:media:rm": "scripts/remove_media_bucket.sh",
+    "pipeline:create": ". scripts/env.sh && aws cloudformation create-stack --stack-name $ASPAN_STACK_NAME-pipeline --template-body file://infrastructure/codepipeline.yaml  --capabilities CAPABILITY_NAMED_IAM --parameters ParameterKey=ProjectName,ParameterValue=$ASPAN_PROJECT ParameterKey=GitBranchName,ParameterValue=$GIT_BRANCH ParameterKey=FullRepositoryId,ParameterValue=$FULL_REPOSITORY_ID ParameterKey=PrincipalOrgID,ParameterValue=$ASPAN_PRINCIPAL_ORG_ID",
+    "pipeline:update": ". scripts/env.sh && aws cloudformation update-stack --stack-name $ASPAN_STACK_NAME-pipeline --template-body file://infrastructure/codepipeline.yaml  --capabilities CAPABILITY_NAMED_IAM --parameters ParameterKey=ProjectName,ParameterValue=$ASPAN_PROJECT ParameterKey=GitBranchName,ParameterValue=$GIT_BRANCH ParameterKey=FullRepositoryId,ParameterValue=$FULL_REPOSITORY_ID ParameterKey=PrincipalOrgID,ParameterValue=$ASPAN_PRINCIPAL_ORG_ID",
+    "pipeline:delete": ". scripts/env.sh && aws cloudformation delete-stack --stack-name $ASPAN_STACK_NAME-pipeline",
+    "infra:setup": ". scripts/env.sh && aws cloudformation create-stack --stack-name aspan-$ASPAN_AWS_ACCOUNT-$AWS_DEFAULT_REGION-shared --template-body file://infrastructure/shared.yaml  --parameters ParameterKey=PrincipalOrgID,ParameterValue=$ASPAN_PRINCIPAL_ORG_ID",
+    "infra:update": ". scripts/env.sh && aws cloudformation update-stack --stack-name aspan-$ASPAN_AWS_ACCOUNT-$AWS_DEFAULT_REGION-shared --template-body file://infrastructure/shared.yaml  --parameters ParameterKey=PrincipalOrgID,ParameterValue=$ASPAN_PRINCIPAL_ORG_ID",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "aws-lambda": "^1.0.7",
+    "heic-convert": "^1.2.4",
+    "sharp": "^0.31.2"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.108",
+    "@types/heic-convert": "^1.2.0",
+    "@types/sharp": "^0.31.0",
+    "aws-sdk": "^2.1253.0",
+    "prettier": "^2.7.1",
+    "typescript": "^4.8.4"
+  }
+}
