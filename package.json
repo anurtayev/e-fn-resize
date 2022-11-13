@@ -16,7 +16,7 @@
     "sam:sync": ". scripts/env.sh && npm run  build:packagejson && sam sync -u --template-file infrastructure/template.yaml --stack-name $ASPAN_STACK_NAME --capabilities CAPABILITY_AUTO_EXPAND CAPABILITY_IAM --s3-bucket $ASPAN_INFRA_BUCKET --watch --parameter-overrides ParameterKey=MediBucket,ParameterValue=$ASPAN_MEDIA_BUCKET ParameterKey=ResizerBucket,ParameterValue=$ASPAN_RESIZER_BUCKET",
     "sam:logs": ". scripts/env.sh && sam logs --stack-name $ASPAN_STACK_NAME --tail",
     "fn:invoke": "aws lambda invoke --function-name e-fn-resize-main --payload file://request.json --cli-binary-format raw-in-base64-out response.json",
-    "test": "jest",
+    "test": "jest --passWithNoTests",
     "test:watch": "jest --watch",
     "lint": "eslint src"
   },
