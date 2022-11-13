@@ -16,9 +16,26 @@ Resources:
       CodeUri: ../src
       Runtime: nodejs16.x
       FunctionName: !Ref AWS::StackName
-      Timeout: 100
+      Timeout: 300
+      MemorySize: 1024
       Policies:
-        - AmazonS3ReadOnlyAccess
+        -
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - s3:Get*
+                - s3:List*
+                - s3-object-lambda:Get*
+                - s3-object-lambda:List*
+              Resource: arn:aws:s3:::epsilon-development-092347820172-us-east-1-app-media-bucket
+        -
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - 's3:*'
+              Resource: arn:aws:s3:::epsilon-resizer
       Environment:
         Variables:
           NODE_OPTIONS: --enable-source-maps
