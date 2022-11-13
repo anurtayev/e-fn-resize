@@ -37,12 +37,12 @@ export const handler = async (event: InputEvent, context) => {
 
   const { key, width, height } = event;
 
-  const requiredKey = `${key}/${width}x${height}.jpeg`;
+  const reqsizedKey = `${key}/${width}x${height}.jpeg`;
 
   const { Contents: contents } = await s3
     .listObjectsV2({
       Bucket: resizerBucket,
-      Prefix: requiredKey,
+      Prefix: reqsizedKey,
     })
     .promise();
 
@@ -53,7 +53,7 @@ export const handler = async (event: InputEvent, context) => {
     resizedBuffer = await s3
       .getObject({
         Bucket: resizerBucket,
-        Key: key,
+        Key: reqsizedKey,
       })
       .promise();
 
@@ -85,7 +85,7 @@ export const handler = async (event: InputEvent, context) => {
     await s3
       .putObject({
         Bucket: resizerBucket,
-        Key: requiredKey,
+        Key: reqsizedKey,
         Body: resizedBuffer,
       })
       .promise();
