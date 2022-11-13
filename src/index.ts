@@ -37,38 +37,65 @@ export const handler = async (event: InputEvent, context) => {
 
   const { key, width, height } = event;
 
-  const { Body: imgBuffer } = await s3
-    .getObject({
-      Bucket: mediaBucket,
-      Key: key,
-    })
-    .promise();
+  const requiredKey = `${key}/${width}x${height}.jpeg`;
 
-  log("downloaded file");
-
-  const convertedBuffer = await convert({
-    buffer: imgBuffer as Buffer,
-    format: "JPEG",
-    quality: 1,
-  });
-
-  log("converted file to JPEG");
-
-  const resizedBuffer = await sharp(convertedBuffer as Buffer)
-    .resize(width, height)
-    .toBuffer();
-
-  await s3
-    .putObject({
+  const { Contents: contents } = await s3
+    .listObjectsV2({
       Bucket: resizerBucket,
-      Key: `${key}/${width}x${height}.jpeg`,
-      Body: resizedBuffer,
+      Prefix: requiredKey,
     })
     .promise();
 
-  console.log("uploaded file");
+  let resizedBuffer;
+  if (contents.length) {
+    log("file already resized");
+
+    resizedBuffer = await s3
+      .getObject({
+        Bucket: resizerBucket,
+        Key: key,
+      })
+      .promise();
+
+    return;
+  } else {
+    log("file was not resized previously");
+
+    const { Body: imgBuffer } = await s3
+      .getObject({
+        Bucket: mediaBucket,
+        Key: key,
+      })
+      .promise();
+
+    log("downloaded file");
+
+    const convertedBuffer = await convert({
+      buffer: imgBuffer as Buffer,
+      format: "JPEG",
+      quality: 1,
+    });
+
+    log("converted file to JPEG");
+
+    resizedBuffer = await sharp(convertedBuffer as Buffer)
+      .resize(width, height)
+      .toBuffer();
+
+    await s3
+      .putObject({
+        Bucket: resizerBucket,
+        Key: requiredKey,
+        Body: resizedBuffer,
+      })
+      .promise();
+
+    console.log("uploaded file");
+  }
 
   return {
     statusCode: 200,
+    isBase64Encoded: true,
+    body: resizedBuffer.toString("base64"),
   };
 };

@@ -1,1 +1,12 @@
-{"statusCode":200}
+{
+  "errorType": "Error",
+  "errorMessage": "invalid input",
+  "trace": [
+    "/var/task/index.ts:35",
+    "    throw new Error(\"invalid input\");",
+    "          ^",
+    "",
+    "Error: invalid input",
+    "    at Runtime.handler (/var/task/index.ts:35:11)"
+  ]
+}
