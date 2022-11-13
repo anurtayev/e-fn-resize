@@ -8,8 +8,11 @@ const s3 = new S3({
   apiVersion: "2006-03-01",
 });
 
-const bucketName = process.env.MEDIA_BUCKET;
-assert(bucketName, "Bucket name environment variable is required");
+const mediaBucket = process.env.MEDIA_BUCKET;
+assert(mediaBucket, "Bucket name environment variable is required");
+
+const resizerBucket = process.env.RESIZER_BUCKET;
+assert(resizerBucket, "Bucket name environment variable is required");
 
 const getParams = (event: APIGatewayProxyEventV2) => {
   const { queryStringParameters } = event;
@@ -31,10 +34,16 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
 
   const { Body: imgBuffer } = await s3
     .getObject({
-      Bucket: bucketName,
+      Bucket: mediaBucket,
       Key: key,
     })
     .promise();
+
+  const outputBuffer = await convert({
+    buffer: imgBuffer as Buffer,
+    format: "JPEG",
+    quality: 1,
+  });
 
   return {
     statusCode: 200,
@@ -46,21 +55,3 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
     ).toString("base64"),
   };
 };
-
-async function run(buf) {
-  const outputBuffer = await convert({
-    buffer: buf, // the HEIC file buffer
-    format: "JPEG", // output format
-    quality: 1, // the jpeg compression quality, between 0 and 1
-  });
-
-  console.log("out.jpeg", outputBuffer);
-}
-
-console.log("==> 0");
-
-const buf = s3.getObject({ Bucket: "", Key: "" });
-
-console.log("==>", buf);
-
-run(buf);
