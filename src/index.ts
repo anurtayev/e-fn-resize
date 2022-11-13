@@ -1,9 +1,8 @@
 import { strict as assert } from "assert";
-import { APIGatewayProxyEventV2, APIGatewayProxyHandlerV2 } from "aws-lambda";
 import S3 from "aws-sdk/clients/s3";
 import convert from "heic-convert";
 import sharp from "sharp";
-import { array, mixed, object, string, ValidationError, number } from "yup";
+import { number, object, string } from "yup";
 
 const { log } = console;
 
